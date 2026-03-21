@@ -1,0 +1,19 @@
+{
+  "name": "qr-code-api",
+  "version": "1.0.0",
+  "description": "QR Code generation REST API and MCP server. Supports text, URLs, vCards, WiFi configs, email, phone, custom colors/sizes.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "mcp": "node src/mcp-server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": ["qr-code", "api", "mcp", "vcard", "wifi", "rest-api"],
+  "author": "lazymac2x",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4"
+  }
+}

@@ -1,0 +1,247 @@
+openapi: 3.0.3
+info:
+  title: QR Code API
+  description: QR code generation REST API. Supports text, URLs, vCards, WiFi configs, email, phone with custom colors and sizes.
+  version: 1.0.0
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3700
+
+paths:
+  /api/v1/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  service:
+                    type: string
+                  version:
+                    type: string
+
+  /api/v1/generate:
+    get:
+      summary: Generate QR code from query parameters
+      parameters:
+        - name: data
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Text or URL to encode
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [png, svg, base64]
+            default: png
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 300
+        - name: errorCorrectionLevel
+          in: query
+          schema:
+            type: string
+            enum: [L, M, Q, H]
+            default: M
+        - name: darkColor
+          in: query
+          schema:
+            type: string
+            default: '#000000'
+        - name: lightColor
+          in: query
+          schema:
+            type: string
+            default: '#ffffff'
+        - name: margin
+          in: query
+          schema:
+            type: integer
+            default: 2
+      responses:
+        '200':
+          description: QR code image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Missing data parameter
+        '500':
+          description: Server error
+
+    post:
+      summary: Generate QR code with full options
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                type:
+                  type: string
+                  enum: [email, phone]
+                  description: Optional helper type
+                format:
+                  type: string
+                  enum: [png, svg, base64]
+                size:
+                  type: integer
+                errorCorrectionLevel:
+                  type: string
+                  enum: [L, M, Q, H]
+                darkColor:
+                  type: string
+                lightColor:
+                  type: string
+                margin:
+                  type: integer
+                to:
+                  type: string
+                  description: Email address (when type=email)
+                subject:
+                  type: string
+                body:
+                  type: string
+                number:
+                  type: string
+                  description: Phone number (when type=phone)
+              required:
+                - data
+      responses:
+        '200':
+          description: QR code image or base64
+        '400':
+          description: Missing required fields
+        '500':
+          description: Server error
+
+  /api/v1/generate/base64:
+    get:
+      summary: Generate QR code and return as base64 JSON
+      parameters:
+        - name: data
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: query
+          schema:
+            type: integer
+        - name: errorCorrectionLevel
+          in: query
+          schema:
+            type: string
+            enum: [L, M, Q, H]
+        - name: darkColor
+          in: query
+          schema:
+            type: string
+        - name: lightColor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Base64 encoded QR code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  base64:
+                    type: string
+                    description: Data URL (data:image/png;base64,...)
+
+  /api/v1/vcard:
+    post:
+      summary: Generate QR code from vCard contact data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phone:
+                  type: string
+                email:
+                  type: string
+                org:
+                  type: string
+                title:
+                  type: string
+                url:
+                  type: string
+                address:
+                  type: string
+                format:
+                  type: string
+                  enum: [png, svg, base64]
+                size:
+                  type: integer
+      responses:
+        '200':
+          description: QR code with vCard data
+        '500':
+          description: Server error
+
+  /api/v1/wifi:
+    post:
+      summary: Generate QR code from WiFi credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ssid:
+                  type: string
+                password:
+                  type: string
+                encryption:
+                  type: string
+                  enum: [WPA, WEP, nopass]
+                  default: WPA
+                format:
+                  type: string
+                  enum: [png, svg, base64]
+                size:
+                  type: integer
+              required:
+                - ssid
+      responses:
+        '200':
+          description: QR code with WiFi config
+        '400':
+          description: Missing SSID
+        '500':
+          description: Server error
